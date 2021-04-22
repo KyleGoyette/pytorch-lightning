@@ -134,6 +134,7 @@ class WandbLogger(LightningLoggerBase):
         self._kwargs = kwargs
 
     def __getstate__(self):
+        print("get state")
         state = self.__dict__.copy()
         # args needed to reload correct experiment
         state['_id'] = self._experiment.id if self._experiment is not None else None
@@ -158,6 +159,7 @@ class WandbLogger(LightningLoggerBase):
         if self._experiment is None:
             if self._offline:
                 os.environ['WANDB_MODE'] = 'dryrun'
+            print("initing")
             self._experiment = wandb.init(
                 name=self._name,
                 dir=self._save_dir,
@@ -180,10 +182,12 @@ class WandbLogger(LightningLoggerBase):
         return self._experiment
 
     def watch(self, model: nn.Module, log: str = 'gradients', log_freq: int = 100):
+        print("watch")
         self.experiment.watch(model, log=log, log_freq=log_freq)
 
     @rank_zero_only
     def log_hyperparams(self, params: Union[Dict[str, Any], Namespace]) -> None:
+        print("log hparams")
         params = self._convert_params(params)
         params = self._flatten_dict(params)
         params = self._sanitize_callable_params(params)
@@ -191,12 +195,15 @@ class WandbLogger(LightningLoggerBase):
 
     @rank_zero_only
     def log_metrics(self, metrics: Dict[str, float], step: Optional[int] = None) -> None:
+        print("I LOGGED SOMETHING")
         assert rank_zero_only.rank == 0, 'experiment tried to log from global_rank != 0'
 
         metrics = self._add_prefix(metrics)
         if step is not None:
+            print("step given")
             self.experiment.log({**metrics, 'trainer/global_step': step})
         else:
+            print("step none")
             self.experiment.log(metrics)
 
     @property
@@ -205,16 +212,23 @@ class WandbLogger(LightningLoggerBase):
 
     @property
     def name(self) -> Optional[str]:
+        print("Name")
         # don't create an experiment if we don't have one
         return self._experiment.project_name() if self._experiment else self._name
 
     @property
     def version(self) -> Optional[str]:
+        print("Version")
         # don't create an experiment if we don't have one
         return self._experiment.id if self._experiment else self._id
 
     @rank_zero_only
     def finalize(self, status: str) -> None:
+        print("Finalize")
         # upload all checkpoints from saving dir
         if self._log_model:
-            wandb.save(os.path.join(self.save_dir, "*.ckpt"))
+            self.experiment.save(os.path.join(self.save_dir, "*.ckpt"))
+        wandb.finish()
+
+    def save(self):
+        pass
