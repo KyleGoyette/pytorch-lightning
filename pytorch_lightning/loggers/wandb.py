@@ -192,8 +192,8 @@ class WandbLogger(LightningLoggerBase):
         params = self._flatten_dict(params)
         params = self._sanitize_callable_params(params)
         self.experiment.config.update(params, allow_val_change=True)
-        wandb.finish()
-        self._experiment = None
+        #wandb.finish()
+        #self._experiment = None
 
     @rank_zero_only
     def log_metrics(self, metrics: Dict[str, float], step: Optional[int] = None) -> None:
@@ -231,6 +231,7 @@ class WandbLogger(LightningLoggerBase):
         if self._log_model:
             self.experiment.save(os.path.join(self.save_dir, "*.ckpt"))
         wandb.finish()
+        self._experiment = None
 
     def save(self):
         pass
