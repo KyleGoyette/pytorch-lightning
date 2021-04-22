@@ -192,6 +192,8 @@ class WandbLogger(LightningLoggerBase):
         params = self._flatten_dict(params)
         params = self._sanitize_callable_params(params)
         self.experiment.config.update(params, allow_val_change=True)
+        wandb.finish()
+        self._experiment = None
 
     @rank_zero_only
     def log_metrics(self, metrics: Dict[str, float], step: Optional[int] = None) -> None:
