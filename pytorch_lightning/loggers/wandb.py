@@ -244,4 +244,4 @@ class WandbLogger(LightningLoggerBase):
         print("SAVE")
         super(WandbLogger, self).save()
         # self._finalize_agg_metrics()
-        wandb.finish()
+        #wandb.finish()
