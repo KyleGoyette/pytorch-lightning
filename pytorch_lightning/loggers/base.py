@@ -16,6 +16,7 @@
 import argparse
 import functools
 import operator
+import os
 from abc import ABC, abstractmethod
 from argparse import Namespace
 from functools import wraps
@@ -140,7 +141,7 @@ class LightningLoggerBase(ABC):
         """This shall be called before save/close."""
         agg_step, metrics_to_log = self._reduce_agg_metrics()
         self._metrics_to_agg = []
-        print("FIN AGG METRICS", metrics_to_log)
+        print("FIN AGG METRICS", metrics_to_log, os.getpid())
         if metrics_to_log is not None:
             self.log_metrics(metrics=metrics_to_log, step=agg_step)
 

@@ -156,6 +156,7 @@ class WandbLogger(LightningLoggerBase):
             self.logger.experiment.some_wandb_function()
 
         """
+        print("EXPERIMENT PID", os.getpid())
         if self._experiment is None:
             if self._offline:
                 os.environ['WANDB_MODE'] = 'dryrun'
@@ -199,7 +200,7 @@ class WandbLogger(LightningLoggerBase):
 
     @rank_zero_only
     def log_metrics(self, metrics: Dict[str, float], step: Optional[int] = None) -> None:
-        print("I LOGGED SOMETHING")
+        print("I LOGGED SOMETHING", os.getpid())
         assert rank_zero_only.rank == 0, 'experiment tried to log from global_rank != 0'
 
         metrics = self._add_prefix(metrics)
@@ -222,13 +223,13 @@ class WandbLogger(LightningLoggerBase):
 
     @property
     def version(self) -> Optional[str]:
-        print("Version")
+        print("Version", os.getpid())
         # don't create an experiment if we don't have one
         return self._experiment.id if self._experiment else self._id
 
     @rank_zero_only
     def finalize(self, status: str) -> None:
-        print("Finalize")
+        print("Finalize", os.getpid())
         # upload all checkpoints from saving dir
         if self._log_model:
             self.experiment.save(os.path.join(self.save_dir, "*.ckpt"))
