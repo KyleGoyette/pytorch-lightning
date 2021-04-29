@@ -37,6 +37,7 @@ def rank_zero_experiment(fn: Callable) -> Callable:
 
         @rank_zero_only
         def get_experiment():
+            print("GET EXPERIMENT", os.getpid())
             return fn(self)
 
         return get_experiment() or DummyExperiment()
