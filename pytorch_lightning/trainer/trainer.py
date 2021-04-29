@@ -531,7 +531,6 @@ class Trainer(
             self.logger.log_hyperparams(self.lightning_module.hparams_initial)
             self.logger.log_graph(self.lightning_module)
             self.logger.save()
-            wandb.finish()
 
     def post_dispatch(self):
         self.accelerator.post_dispatch(self)
