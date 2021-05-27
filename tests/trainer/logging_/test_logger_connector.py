@@ -26,10 +26,10 @@ from torchmetrics import Accuracy, AveragePrecision
 
 from pytorch_lightning import LightningModule
 from pytorch_lightning.callbacks.base import Callback
-from pytorch_lightning.core.step_result import Result
 from pytorch_lightning.trainer import Trainer
-from pytorch_lightning.trainer.connectors.logger_connector.callback_hook_validator import CallbackHookNameValidator
+from pytorch_lightning.trainer.connectors.logger_connector.fx_validator import FxValidator
 from pytorch_lightning.trainer.connectors.logger_connector.metrics_holder import MetricsHolder
+from pytorch_lightning.trainer.connectors.logger_connector.result import Result
 from pytorch_lightning.utilities.exceptions import MisconfigurationException
 from tests.helpers.boring_model import BoringModel, RandomDataset
 from tests.helpers.runif import RunIf
@@ -271,8 +271,7 @@ def test__logger_connector__epoch_result_store__test_multi_dataloaders(tmpdir, n
         torch.testing.assert_allclose(generated, expected)
 
 
-def test_call_back_validator(tmpdir):
-
+def test_fx_validator(tmpdir):
     funcs_name = sorted([f for f in dir(Callback) if not f.startswith('_')])
 
     callbacks_func = [
@@ -313,6 +312,12 @@ def test_call_back_validator(tmpdir):
         'on_validation_epoch_end',
         'on_validation_epoch_start',
         'on_validation_start',
+        "on_predict_batch_end",
+        "on_predict_batch_start",
+        "on_predict_end",
+        "on_predict_epoch_end",
+        "on_predict_epoch_start",
+        "on_predict_start",
         'setup',
         'teardown',
     ]
@@ -330,6 +335,12 @@ def test_call_back_validator(tmpdir):
         "on_pretrain_routine_start",
         "on_sanity_check_end",
         "on_sanity_check_start",
+        "on_predict_batch_end",
+        "on_predict_batch_start",
+        "on_predict_end",
+        "on_predict_epoch_end",
+        "on_predict_epoch_start",
+        "on_predict_start",
         "on_save_checkpoint",
         "on_test_end",
         "on_train_end",
@@ -338,12 +349,12 @@ def test_call_back_validator(tmpdir):
         "teardown",
     ]
 
-    assert (
-        funcs_name == sorted(callbacks_func)
-    ), """Detected new callback function.
-        Need to add its logging permission to CallbackHookNameValidator and update this test"""
+    assert funcs_name == sorted(callbacks_func), (
+        "Detected new callback function. Need to add its logging"
+        " permission to FxValidator and update this test"
+    )
 
-    validator = CallbackHookNameValidator()
+    validator = FxValidator()
 
     for func_name in funcs_name:
         # This summarizes where and what is currently possible to log using `self.log`
@@ -356,23 +367,21 @@ def test_call_back_validator(tmpdir):
             is_stage or "batch" in func_name or "epoch" in func_name or "grad" in func_name or "backward" in func_name
         )
         allowed = (
-            allowed and "pretrain" not in func_name
+            allowed and "pretrain" not in func_name and "predict" not in func_name
             and func_name not in ["on_train_end", "on_test_end", "on_validation_end"]
         )
         if allowed:
-            validator.check_logging_in_callbacks(current_hook_fx_name=func_name, on_step=on_step, on_epoch=on_epoch)
+            validator.check_logging(fx_name=func_name, on_step=on_step, on_epoch=on_epoch)
             if not is_start and is_stage:
-                with pytest.raises(MisconfigurationException, match="function supports only"):
-                    validator.check_logging_in_callbacks(
-                        current_hook_fx_name=func_name, on_step=True, on_epoch=on_epoch
-                    )
+                with pytest.raises(MisconfigurationException, match="You can't"):
+                    validator.check_logging(fx_name=func_name, on_step=True, on_epoch=on_epoch)
         else:
             assert func_name in not_supported
             with pytest.raises(MisconfigurationException, match="function doesn't support"):
-                validator.check_logging_in_callbacks(current_hook_fx_name=func_name, on_step=on_step, on_epoch=on_epoch)
+                validator.check_logging(fx_name=func_name, on_step=on_step, on_epoch=on_epoch)
 
-        # should not fail
-        validator.check_logging_in_callbacks(current_hook_fx_name=None, on_step=None, on_epoch=None)
+    with pytest.raises(RuntimeError, match="`foo` but it is not implemented"):
+        validator.check_logging("foo", False, False)
 
 
 @RunIf(min_gpus=2)
@@ -624,8 +633,8 @@ def test_metrics_reset(tmpdir):
             ap = self._modules[f"ap_{stage}"]
 
             labels_int = labels.to(torch.long)
-            acc(probs, labels_int)
-            ap(probs, labels_int)
+            acc(probs.flatten(), labels_int)
+            ap(probs.flatten(), labels_int)
 
             # Metric.forward calls reset so reset the mocks here
             acc.reset.reset_mock()
@@ -666,13 +675,13 @@ def test_metrics_reset(tmpdir):
             acc.reset.asset_not_called()
             ap.reset.assert_not_called()
 
-        def on_train_epoch_end(self, outputs):
+        def on_train_epoch_end(self):
             self._assert_epoch_end('train')
 
-        def on_validation_epoch_end(self, outputs):
+        def on_validation_epoch_end(self):
             self._assert_epoch_end('val')
 
-        def on_test_epoch_end(self, outputs):
+        def on_test_epoch_end(self):
             self._assert_epoch_end('test')
 
     def _assert_called(model, stage):
