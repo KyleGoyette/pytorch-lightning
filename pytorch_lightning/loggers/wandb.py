@@ -263,10 +263,10 @@ class WandbLogger(LightningLoggerBase):
 
     @rank_zero_only
     def finalize(self, status: str) -> None:
-        print("Finalize", os.getpid())
+        print("FINALIZE", os.getpid())
         # upload all checkpoints from saving dir
-        if self._log_model:
-            self.experiment.save(os.path.join(self.save_dir, "*.ckpt"))
+        if self._log_model and self._experiment:
+            self._experiment.save(os.path.join(self.save_dir, "*.ckpt"))
         print("Running finish")
         try:
             wandb.finish()
