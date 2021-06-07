@@ -269,7 +269,7 @@ class WandbLogger(LightningLoggerBase):
             self._experiment.save(os.path.join(self.save_dir, "*.ckpt"))
         print("Running finish")
         try:
-            wandb.finish()
+            wandb.finish(exit_code=0)
         except Exception as e:
             print("EXCEPTION when finishing!!!")
             print(e)
