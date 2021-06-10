@@ -194,16 +194,13 @@ class WandbLogger(LightningLoggerBase):
             if self._offline:
                 os.environ['WANDB_MODE'] = 'dryrun'
             print("initing", wandb.run is None)
-            if wandb.run is not None:
-                self._experiment = wandb.init(**self._wandb_init)# if wandb.run is None else wandb.run
+            if self.reinit:
+                self._wandb_init["save_code"] = False
+                self._experiment = wandb.init(**self._wandb_init) if wandb.run is None else wandb.run
             else:
-                if self.reinit:
-                    self._wandb_init["save_code"] = False
-                    self._experiment = wandb.init(**self._wandb_init) if wandb.run is None else wandb.run
-                else:
-                    self._experiment = wandb.init(**self._wandb_init) if wandb.run is None else wandb.run
-                    self._wandb_init["id"] = self._experiment.id
-                    self.reinit=True
+                self._experiment = wandb.init(**self._wandb_init) if wandb.run is None else wandb.run
+                self._wandb_init["id"] = self._experiment.id
+                self.reinit=True
 
             # save checkpoints in wandb dir to upload on W&B servers
             if self._save_dir is None:
@@ -273,10 +270,8 @@ class WandbLogger(LightningLoggerBase):
         print("Running finish")
         try:
             
-            if status == "success":
-                wandb.finish(exit_code=0)
-            else:
-                wandb.finish(exit_code=-1)
+            wandb.finish(exit_code=0)
+            #wandb.finish(exit_code=-1)
         except Exception as e:
             print("EXCEPTION when finishing!!!")
             print(e)
