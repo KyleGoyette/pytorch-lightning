@@ -198,7 +198,7 @@ class WandbLogger(LightningLoggerBase):
                 # wandb.finish()
                 self._experiment = wandb.init(**self._wandb_init)# if wandb.run is None else wandb.run
             else:
-                self._experiment = wandb.init(**self._wandb_init) if wandb.run is None else wandb.run
+                self._experiment = wandb.init(**self._wandb_init)# if wandb.run is None else wandb.run
                 self._wandb_init["id"] = self._experiment.id
                 self._reinit = True
 
