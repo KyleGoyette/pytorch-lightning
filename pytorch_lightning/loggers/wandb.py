@@ -164,7 +164,6 @@ class WandbLogger(LightningLoggerBase):
         self._save_dir = self._wandb_init.get('dir')
         self._name = self._wandb_init.get('name')
         self._id = self._wandb_init.get('id')
-        self.reinit = False
 
     def __getstate__(self):
         print("get state")
@@ -194,13 +193,12 @@ class WandbLogger(LightningLoggerBase):
             if self._offline:
                 os.environ['WANDB_MODE'] = 'dryrun'
             print("initing", wandb.run is None)
-            if self.reinit:
-                self._wandb_init["save_code"] = False
-                self._experiment = wandb.init(**self._wandb_init) if wandb.run is None else wandb.run
+            if wandb.run is not None:
+                # wandb.finish()
+                self._experiment = wandb.init(**self._wandb_init)# if wandb.run is None else wandb.run
             else:
-                self._experiment = wandb.init(**self._wandb_init) if wandb.run is None else wandb.run
+                self._experiment = wandb.init(**self._wandb_init)# if wandb.run is None else wandb.run
                 self._wandb_init["id"] = self._experiment.id
-                self.reinit=True
 
             # save checkpoints in wandb dir to upload on W&B servers
             if self._save_dir is None:
@@ -224,6 +222,8 @@ class WandbLogger(LightningLoggerBase):
         params = self._flatten_dict(params)
         params = self._sanitize_callable_params(params)
         self.experiment.config.update(params, allow_val_change=True)
+        #wandb.finish()
+        #self._experiment = None
 
     @rank_zero_only
     def log_metrics(self, metrics: Dict[str, float], step: Optional[int] = None) -> None:
@@ -263,14 +263,14 @@ class WandbLogger(LightningLoggerBase):
 
     @rank_zero_only
     def finalize(self, status: str) -> None:
-        #print("FINALIZE", os.getpid())
+        print("FINALIZE", os.getpid())
         # upload all checkpoints from saving dir
         if self._log_model:
             self._experiment.save(os.path.join(self.save_dir, "*.ckpt"))
         print("Running finish")
         try:
-            wandb.finish()
-            #wandb.finish(exit_code=-1)
+            self._wandb_init["save_code"] = False
+            wandb.finish(exit_code=0)
         except Exception as e:
             print("EXCEPTION when finishing!!!")
             print(e)
