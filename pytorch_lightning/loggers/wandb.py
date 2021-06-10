@@ -269,7 +269,7 @@ class WandbLogger(LightningLoggerBase):
             self._experiment.save(os.path.join(self.save_dir, "*.ckpt"))
         print("Running finish")
         try:
-            self._wandb_init["save_code"] = False
+            #self._wandb_init["save_code"] = False
             if status == "success":
                 wandb.finish(exit_code=0)
             else:
