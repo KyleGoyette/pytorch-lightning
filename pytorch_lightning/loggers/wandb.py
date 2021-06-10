@@ -193,10 +193,11 @@ class WandbLogger(LightningLoggerBase):
             if self._offline:
                 os.environ['WANDB_MODE'] = 'dryrun'
             print("initing", wandb.run is None)
-            # if wandb.run is not None:
-            #     self._experiment = wandb.init(**self._wandb_init) if wandb.run is None else wandb.run
-            # else:
-            self._experiment = wandb.init(**self._wandb_init) if wandb.run is None else wandb.run
+            if wandb.run is not None:
+                self._experiment = wandb.init(**self._wandb_init)# if wandb.run is None else wandb.run
+            else:
+                self._experiment = wandb.init(**self._wandb_init)# if wandb.run is None else wandb.run
+                self._wandb_init["id"] = self._experiment.id
 
             # save checkpoints in wandb dir to upload on W&B servers
             if self._save_dir is None:
