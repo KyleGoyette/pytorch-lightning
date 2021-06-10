@@ -164,6 +164,7 @@ class WandbLogger(LightningLoggerBase):
         self._save_dir = self._wandb_init.get('dir')
         self._name = self._wandb_init.get('name')
         self._id = self._wandb_init.get('id')
+        self.reinit = False
 
     def __getstate__(self):
         print("get state")
@@ -196,12 +197,13 @@ class WandbLogger(LightningLoggerBase):
             if wandb.run is not None:
                 self._experiment = wandb.init(**self._wandb_init)# if wandb.run is None else wandb.run
             else:
-                if self._wandb_init.get("id"):
+                if self.reinit:
                     self._wandb_init["save_code"] = False
                     self._experiment = wandb.init(**self._wandb_init) if wandb.run is None else wandb.run
                 else:
                     self._experiment = wandb.init(**self._wandb_init) if wandb.run is None else wandb.run
                     self._wandb_init["id"] = self._experiment.id
+                    self.reinit=True
 
             # save checkpoints in wandb dir to upload on W&B servers
             if self._save_dir is None:
