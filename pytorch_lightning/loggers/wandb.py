@@ -197,7 +197,7 @@ class WandbLogger(LightningLoggerBase):
                 # wandb.finish()
                 self._experiment = wandb.init(**self._wandb_init)# if wandb.run is None else wandb.run
             else:
-                self._experiment = wandb.init(**self._wandb_init)# if wandb.run is None else wandb.run
+                self._experiment = wandb.init(**self._wandb_init) if wandb.run is None else wandb.run
                 #self._wandb_init["id"] = self._experiment.id
 
             # save checkpoints in wandb dir to upload on W&B servers
@@ -266,7 +266,7 @@ class WandbLogger(LightningLoggerBase):
             self._experiment.save(os.path.join(self.save_dir, "*.ckpt"))
         print("Running finish")
         try:
-            #self._wandb_init["save_code"] = False
+            self._wandb_init["save_code"] = False
             wandb.finish()
         except Exception as e:
             print("EXCEPTION when finishing!!!")
