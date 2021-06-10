@@ -270,7 +270,7 @@ class WandbLogger(LightningLoggerBase):
         print("Running finish")
         try:
             
-            wandb.finish(exit_code=0)
+            wandb.finish()
             #wandb.finish(exit_code=-1)
         except Exception as e:
             print("EXCEPTION when finishing!!!")
