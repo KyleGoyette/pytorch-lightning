@@ -198,7 +198,7 @@ class WandbLogger(LightningLoggerBase):
                 self._experiment = wandb.init(**self._wandb_init)# if wandb.run is None else wandb.run
             else:
                 self._experiment = wandb.init(**self._wandb_init)# if wandb.run is None else wandb.run
-                self._wandb_init["id"] = self._experiment.id
+                #self._wandb_init["id"] = self._experiment.id
 
             # save checkpoints in wandb dir to upload on W&B servers
             if self._save_dir is None:
@@ -244,13 +244,11 @@ class WandbLogger(LightningLoggerBase):
 
     @property
     def name(self) -> Optional[str]:
-        print("Name")
         # don't create an experiment if we don't have one
         return self._experiment.project_name() if self._experiment else self._name
 
     @property
     def version(self) -> Optional[str]:
-        print("Version", os.getpid())
         # don't create an experiment if we don't have one
         return self._experiment.id if self._experiment else self._id
 
@@ -263,7 +261,6 @@ class WandbLogger(LightningLoggerBase):
 
     @rank_zero_only
     def finalize(self, status: str) -> None:
-        print("FINALIZE", os.getpid())
         # upload all checkpoints from saving dir
         if self._log_model:
             self._experiment.save(os.path.join(self.save_dir, "*.ckpt"))
