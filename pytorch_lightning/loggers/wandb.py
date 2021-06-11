@@ -216,7 +216,6 @@ class WandbLogger(LightningLoggerBase):
 
     @rank_zero_only
     def log_hyperparams(self, params: Union[Dict[str, Any], Namespace]) -> None:
-        print("log hparams")
         params = self._convert_params(params)
         params = self._flatten_dict(params)
         params = self._sanitize_callable_params(params)
@@ -224,15 +223,12 @@ class WandbLogger(LightningLoggerBase):
 
     @rank_zero_only
     def log_metrics(self, metrics: Dict[str, float], step: Optional[int] = None) -> None:
-        print("I LOGGED SOMETHING", os.getpid())
         assert rank_zero_only.rank == 0, 'experiment tried to log from global_rank != 0'
 
         metrics = self._add_prefix(metrics)
         if step is not None:
-            print("step given")
             self.experiment.log({**metrics, 'trainer/global_step': step})
         else:
-            print("step none")
             self.experiment.log(metrics)
 
     @property
@@ -259,24 +255,13 @@ class WandbLogger(LightningLoggerBase):
     @rank_zero_only
     def finalize(self, status: str) -> None:
         # upload all checkpoints from saving dir
-        if self._log_model:
-            self._experiment.save(os.path.join(self.save_dir, "*.ckpt"))
-        print("Running finish")
-        try:
-            if status == "success":
-                wandb.finish(exit_code=0)
-            else:
-                wandb.finish(exit_code=-1)
-        except Exception as e:
-            print("EXCEPTION when finishing!!!")
-            print(e)
-            raise e
-        print("finish run")
-        self._experiment = None
-
-    def save(self):
         if self._checkpoint_callback:
             self._scan_and_log_checkpoints(self._checkpoint_callback)
+        if status == "success":
+            wandb.finish(exit_code=0)
+        else:
+            wandb.finish(exit_code=-1)
+        self._experiment = None
 
     def _scan_and_log_checkpoints(self, checkpoint_callback: 'ReferenceType[ModelCheckpoint]') -> None:
         # get checkpoints to be saved with associated score
