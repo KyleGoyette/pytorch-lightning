@@ -197,14 +197,6 @@ class WandbLogger(LightningLoggerBase):
                 self._experiment = wandb.init(**self._wandb_init) if wandb.run is None else wandb.run
                 self._wandb_init["id"] = self._experiment.id
                 # temporary fix, in ddp reinit, code saving causes tpu processes to hang
-                self._wandb_init["save_code"] = False
-                
-                if self._wandb_init.get("settings"):
-                    settings = self._wandb_init.get("settings")
-                    settings.update({"label_disable": False}, _override=True)
-                else: 
-                    settings = wandb.Settings(label_disable=False)
-                    self._wandb_init["settings"] = settings
                 self._reinit = True
 
             # save checkpoints in wandb dir to upload on W&B servers
