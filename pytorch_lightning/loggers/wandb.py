@@ -195,8 +195,9 @@ class WandbLogger(LightningLoggerBase):
                 os.environ['WANDB_MODE'] = 'dryrun'
             print("initing", wandb.run is None, self._reinit)
             if self._reinit:
-                wandb.finish()
+                #wandb.finish()
                 self._experiment = wandb.init(**self._wandb_init)# if wandb.run is None else wandb.run
+                self._experiment.settings.save_code = False
             else:
                 self._experiment = wandb.init(**self._wandb_init)# if wandb.run is None else wandb.run
                 self._wandb_init["id"] = self._experiment.id
@@ -268,8 +269,10 @@ class WandbLogger(LightningLoggerBase):
             self._experiment.save(os.path.join(self.save_dir, "*.ckpt"))
         print("Running finish")
         try:
-            self._wandb_init["save_code"] = False
-            wandb.finish(exit_code=0)
+            if status == "success":
+                wandb.finish(exit_code=0)
+            else:
+                wandb.finish(exit_code=-1)
         except Exception as e:
             print("EXCEPTION when finishing!!!")
             print(e)
