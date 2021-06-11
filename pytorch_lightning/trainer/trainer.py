@@ -20,6 +20,8 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Union
 from weakref import proxy
 
+import wandb
+
 import torch
 from torch.utils.data import DataLoader
 
@@ -586,7 +588,7 @@ class Trainer(
 
         assert self.state.stopped
         self.testing = False
-
+        wandb.finish()
         return results
 
     def predict(
