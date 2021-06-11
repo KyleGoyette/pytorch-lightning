@@ -160,7 +160,7 @@ class TPUSpawnPlugin(DDPSpawnPlugin):
         trainer.precision_plugin.connect(self._model, None, None)
 
         self.barrier("pre-run-stage")
-
+        print("Running stage")
         results = trainer.run_stage()
 
         self.transfer_distrib_spawn_state_on_fit_end(results)
@@ -241,6 +241,7 @@ class TPUSpawnPlugin(DDPSpawnPlugin):
         return output
 
     def _close_logger(self, trainer) -> None:
+        print("Killing logger")
         if trainer.logger is not None:
             trainer.logger.finalize("success")
 
@@ -257,6 +258,7 @@ class TPUSpawnPlugin(DDPSpawnPlugin):
         if 'XLA_USE_BF16' in os.environ:
             del os.environ["XLA_USE_BF16"]
         self._close_logger(trainer)
+        print("Closed logger")
         xmp.spawn(self.new_process, **self.xmp_spawn_kwargs)
 
     def start_evaluating(self, trainer) -> None:

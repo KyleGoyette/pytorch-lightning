@@ -253,11 +253,13 @@ class WandbLogger(LightningLoggerBase):
 
     @rank_zero_only
     def finalize(self, status: str) -> None:
+        print("Finalizing", os.getpid())
         # upload all checkpoints from saving dir
-        #if self._checkpoint_callback:
-        #    self._scan_and_log_checkpoints(self._checkpoint_callback)
+        if self._checkpoint_callback:
+            self._scan_and_log_checkpoints(self._checkpoint_callback)
         wandb.finish()
         self._experiment = None
+        print("Finalized", os.getpid())
 
     def _scan_and_log_checkpoints(self, checkpoint_callback: 'ReferenceType[ModelCheckpoint]') -> None:
         # get checkpoints to be saved with associated score
