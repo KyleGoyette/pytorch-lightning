@@ -167,7 +167,6 @@ class WandbLogger(LightningLoggerBase):
         self._reinit = False
 
     def __getstate__(self):
-        print("get state")
         state = self.__dict__.copy()
         # args needed to reload correct experiment
         state['_id'] = self._experiment.id if self._experiment is not None else None
@@ -189,23 +188,21 @@ class WandbLogger(LightningLoggerBase):
             self.logger.experiment.some_wandb_function()
 
         """
-        print("EXPERIMENT PID", os.getpid())
         if self._experiment is None:
             if self._offline:
                 os.environ['WANDB_MODE'] = 'dryrun'
-            print("initing", wandb.run is None, self._reinit)
             if self._reinit:
-                #wandb.finish()
-                self._experiment = wandb.init(**self._wandb_init)# if wandb.run is None else wandb.run
+                self._experiment = wandb.init(**self._wandb_init) if wandb.run is None else wandb.run
             else:
-                self._experiment = wandb.init(**self._wandb_init)# if wandb.run is None else wandb.run
+                self._experiment = wandb.init(**self._wandb_init) if wandb.run is None else wandb.run
                 self._wandb_init["id"] = self._experiment.id
+                # temporary fix, in ddp reinit, code saving causes tpu processes to hang
                 self._wandb_init["save_code"] = False
                 self._reinit = True
 
             # save checkpoints in wandb dir to upload on W&B servers
-            if self._save_dir is None:
-                self._save_dir = self._experiment.dir
+            # if self._save_dir is None:
+            #     self._save_dir = self._experiment.dir
 
             # define default x-axis (for latest wandb versions)
             if getattr(self._experiment, "define_metric", None):
@@ -215,7 +212,6 @@ class WandbLogger(LightningLoggerBase):
         return self._experiment
 
     def watch(self, model: nn.Module, log: str = 'gradients', log_freq: int = 100):
-        print("watch")
         self.experiment.watch(model, log=log, log_freq=log_freq)
 
     @rank_zero_only
@@ -225,8 +221,6 @@ class WandbLogger(LightningLoggerBase):
         params = self._flatten_dict(params)
         params = self._sanitize_callable_params(params)
         self.experiment.config.update(params, allow_val_change=True)
-        #wandb.finish()
-        #self._experiment = None
 
     @rank_zero_only
     def log_metrics(self, metrics: Dict[str, float], step: Optional[int] = None) -> None:
