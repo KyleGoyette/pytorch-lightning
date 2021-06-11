@@ -588,7 +588,7 @@ class Trainer(
 
         assert self.state.stopped
         self.testing = False
-        wandb.finish()
+        print("DONE TESTING")
         return results
 
     def predict(

@@ -17,6 +17,7 @@ import re
 import time
 from typing import Any, Dict, List, Optional, Union
 
+import wandb
 import torch
 import torch.multiprocessing as mp
 from torch.nn import Module
@@ -171,6 +172,8 @@ class TPUSpawnPlugin(DDPSpawnPlugin):
         # https://github.com/pytorch/xla/issues/2190#issuecomment-641665358
         if self.local_rank == 0:
             time.sleep(2)
+        
+        wandb.finish()
 
     @parameter_validation
     def model_to_device(self) -> None:
