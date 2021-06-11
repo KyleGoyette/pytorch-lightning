@@ -201,7 +201,7 @@ class WandbLogger(LightningLoggerBase):
                 
                 if self._wandb_init.get("settings"):
                     settings = self._wandb_init.get("settings")
-                    settings.update("label_disable") = False
+                    settings.update({"label_disable": False}, _override=True)
                 else: 
                     settings = wandb.Settings(label_disable=False)
                     self._wandb_init["settings"] = settings
