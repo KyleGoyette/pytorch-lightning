@@ -201,8 +201,8 @@ class WandbLogger(LightningLoggerBase):
                 self._reinit = True
 
             # save checkpoints in wandb dir to upload on W&B servers
-            # if self._save_dir is None:
-            #     self._save_dir = self._experiment.dir
+            if self._save_dir is None:
+                self._save_dir = self._experiment.dir
 
             # define default x-axis (for latest wandb versions)
             if getattr(self._experiment, "define_metric", None):
@@ -263,10 +263,10 @@ class WandbLogger(LightningLoggerBase):
             self._experiment.save(os.path.join(self.save_dir, "*.ckpt"))
         print("Running finish")
         try:
-            # if status == "success":
-            wandb.finish(exit_code=0)
-            # else:
-            #     wandb.finish(exit_code=-1)
+            if status == "success":
+                wandb.finish(exit_code=0)
+            else:
+                wandb.finish(exit_code=-1)
         except Exception as e:
             print("EXCEPTION when finishing!!!")
             print(e)
