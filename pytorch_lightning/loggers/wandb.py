@@ -253,6 +253,7 @@ class WandbLogger(LightningLoggerBase):
 
     @rank_zero_only
     def finalize(self, status: str) -> None:
+        super().finalize(status)
         print("Finalizing", os.getpid())
         # upload all checkpoints from saving dir
         if self._checkpoint_callback:
