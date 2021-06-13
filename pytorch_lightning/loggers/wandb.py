@@ -292,3 +292,6 @@ class WandbLogger(LightningLoggerBase):
             self.experiment.log_artifact(artifact, aliases=aliases)
             # remember logged models - timestamp needed in case filename didn't change (lastkckpt or custom name)
             self._logged_model_time[p] = t
+
+    def on_test_end(self):
+        self.finalize('success')
