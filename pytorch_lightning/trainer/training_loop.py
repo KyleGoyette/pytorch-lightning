@@ -16,7 +16,7 @@ from collections import OrderedDict
 from contextlib import contextmanager, suppress
 from functools import partial, update_wrapper
 from typing import Any, Callable, Dict, List, Mapping, Optional, Tuple, Union
-
+import os
 import numpy as np
 import torch
 from torch.optim import Optimizer
@@ -117,6 +117,7 @@ class TrainLoop:
         # It might be related to xla tensors blocked when moving the cpu
         # kill loggers
         if self.trainer.logger is not None:
+            print("Calling finalize from training loop", os.getpid())
             self.trainer.logger.finalize("success")
 
         # summarize profile results
