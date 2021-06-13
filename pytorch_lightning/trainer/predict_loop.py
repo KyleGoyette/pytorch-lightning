@@ -162,3 +162,7 @@ class PredictLoop(object):
 
         # hook
         self.trainer.call_hook("on_predict_end")
+
+        # kill loggers
+        if self.trainer.logger is not None:
+            self.trainer.logger.finalize("success")

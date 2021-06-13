@@ -143,7 +143,7 @@ class TPUSpawnPlugin(DDPSpawnPlugin):
 
     def new_process(self, process_idx: int, trainer, mp_queue) -> None:
         self.mp_queue = mp_queue
-
+        print("Process pid", os.getpid())
         reset_seed()
 
         self.tpu_local_core_rank = xm.get_local_ordinal()
