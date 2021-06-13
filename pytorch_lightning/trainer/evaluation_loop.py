@@ -114,7 +114,6 @@ class EvaluationLoop(object):
         if self.trainer.testing:
             self.trainer.call_hook('on_test_end', *args, **kwargs)
             if self.trainer.logger is not None:
-                print("Calling finalize from evaluation end")
                 self.trainer.logger.finalize("success")
         else:
             self.trainer.call_hook('on_validation_end', *args, **kwargs)
