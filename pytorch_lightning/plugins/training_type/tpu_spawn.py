@@ -242,6 +242,7 @@ class TPUSpawnPlugin(DDPSpawnPlugin):
 
     def _close_logger(self, trainer) -> None:
         if trainer.logger is not None:
+            print("Calling finish from _close_logger")
             trainer.logger.finalize("success")
 
     @property
